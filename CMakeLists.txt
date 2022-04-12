@@ -23,16 +23,16 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${OUTPUT_DIR}")
                                 #   ...and libs is probably not compatible with all compilers.
 
 # NOTE: Folders here contain both SDL2 and SDL2_image files.
-set(SDL2_LIB_DIR C:/SDL/lib)
-set(SDL2_INCLUDE_DIR C:/SDL/include)
-set(SDL2_LIBRARY C:/SDL/bin)
+set(SDL2_LIB_DIR C:/lib/SDL/mingw/x86/lib)
+set(SDL2_INCLUDE_DIR C:/lib/SDL/mingw/x86/include)
+set(SDL2_LIBRARY C:/lib/SDL/mingw/x86/bin)
 
 # SETUP INCLUDE AND LINK DIRS:
 
 
 include_directories(
     ${SDL2_INCLUDE_DIR}
-    ${PROJECT_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/libs
 )
 
 link_directories(
@@ -42,7 +42,7 @@ link_directories(
 
 # INCLUDE FILES THAT SHOULD BE COMPILED:
 
-file(GLOB_RECURSE SRC "src/*.cpp" "src/*.h")
+file(GLOB_RECURSE SRC "src/*.cpp" "libs/imgui/*.cpp")
 
 message(STATUS "Add source files:")
 foreach(SRC_FILE IN LISTS SRC)

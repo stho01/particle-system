@@ -1,14 +1,22 @@
 #include "GameBase.h"
 #include <SDL2/SDL_image.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_sdl.h>
+#include <imgui/imgui_impl_sdlrenderer.h>
 
 GameBase::~GameBase()
 {
+    ImGui_ImplSDLRenderer_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
     while (!_textures.empty()) {
         auto it = _textures.begin();
         _textures.erase(it);
         SDL_DestroyTexture(*it);
     }
 
+    SDL_DestroyRenderer(_renderer);
     SDL_DestroyWindow(_window);
     _window = nullptr;
 
@@ -28,16 +36,35 @@ int GameBase::run()
     if (!loadMedias())
     {
         printf("Failed to load medias");
-        return -1;
+        return -2;
     }
+
+    if (!initImGUI(_window, _renderer)) {
+        printf("Failed to init ImGUI");
+        return -3;
+    }
+
+    initialize();
 
     SDL_Event e;
     while(!_quit)
     {
         pollEvents(&e);
-        update();
+
+        int timeToWait = MS_PR_FRAME - (SDL_GetTicks() - _timeSincePreviousFrame);
+        if (timeToWait > 0 && timeToWait <= MS_PR_FRAME) {
+            SDL_Delay(timeToWait);
+        }
+
+        auto ticks = SDL_GetTicks();
+        _deltaTime = (ticks - _timeSincePreviousFrame) / 1000.0;
+        _timeSincePreviousFrame = ticks;
+
+        update(_deltaTime);
+
+        SDL_SetRenderDrawColor(_renderer, 22,22,22, 255);
         SDL_RenderClear(_renderer);
-        draw(_renderer);
+        draw(_renderer, _deltaTime);
         SDL_RenderPresent(_renderer);
     }
 
@@ -65,6 +92,8 @@ void GameBase::pollEvents(SDL_Event* e)
 {
     while (SDL_PollEvent(e) != 0)
     {
+        ImGui_ImplSDL2_ProcessEvent(e);
+
         _quit = e->type == SDL_QUIT;
         if (!_quit)
             handleEvent(e);
@@ -101,6 +130,7 @@ bool GameBase::createWindow()
     }
 
     _renderer = SDL_CreateRenderer(_window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_SetRenderDrawBlendMode(_renderer, SDL_BLENDMODE_BLEND);
 
     return true;
 }
@@ -115,4 +145,23 @@ SDL_Texture* GameBase::loadTexture(const std::string& path) {
 
     printf("Failed to load texture: %s", path.c_str());
     return nullptr;
+}
+
+bool GameBase::initImGUI(SDL_Window* window, SDL_Renderer* renderer) {
+
+    // init ImGui Context & SDL ImGui Backend.
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
+    ImGui_ImplSDLRenderer_Init(renderer);
+    return true;
 }
