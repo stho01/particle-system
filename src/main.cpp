@@ -4,11 +4,13 @@
 #include <time.h>       /* time */
 #include <SDL2/SDL.h>
 #include "Game.h"
+#include "BeizerCurve.h"
 
 using namespace std;
 
 int main(int argc, char* args[]) {
     srand(time(NULL));
+
     Game lesson;
     lesson.run();
     return 0;

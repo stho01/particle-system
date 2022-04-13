@@ -27,6 +27,7 @@ protected:
     virtual void draw(SDL_Renderer* renderer, double deltaTime) = 0;
 
     SDL_Texture* loadTexture(const std::string& path);
+    SDL_Renderer* getRenderer() const { return _renderer; }
 
     bool initSdl();
 

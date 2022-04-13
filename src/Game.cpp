@@ -2,10 +2,15 @@
 #include "GUI.h"
 #include <cmath>
 #include <iostream>
+#include "BeizerCurve.h"
 
 
-Game::Game() : GameBase("particles") {}
-Game::~Game() {}
+Game::Game()
+    : GameBase("particles") {}
+
+Game::~Game() {
+    SDL_DestroyTexture(_particleTexture);
+}
 
 // ===========================================================
 
@@ -17,11 +22,47 @@ bool Game::loadMedias()
 // ===========================================================
 
 bool Game::initialize() {
+    auto* renderer = getRenderer();
+    _particleTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_SetRenderTarget(renderer, _particleTexture);
+    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+    SDL_RenderDrawPoint(renderer,0,0);
+    SDL_SetRenderTarget(renderer, nullptr);
 
-    _particles.resize(50000);
-    for (int i = 0; i < 50000; i++) {
-        _deadParticlesIndices.push(i);
-    }
+//    ParticleSystem system {};
+//
+//    system.duration = 100;
+//    system.gravityModifier = 0;
+//    system.rateOverTime = 25;
+//    system.looping = true;
+//
+//    system.startLifeTime = 5000;
+//    system.startSize = 40;
+//    system.startSpeed = 90;
+//    system.startColor = { 255,0,0,255 };
+
+    ParticleSystem* system = GUI::GetParticleSystem();
+
+//    system->sizeOverTime.p0 = { 0.00f, 0.00f };
+//    system->sizeOverTime.p1 = { 0.30f, 2.50f };
+//    system->sizeOverTime.p2 = { 1.00f, 0.00f };
+//    system->sizeOverTime.p3 = { 1.00f, 0.00f };
+
+    system->sizeOverTime.p0 = { 0.00f, 0.00f };
+    system->sizeOverTime.p1 = { 0.30f, 2.00f };
+    system->sizeOverTime.p2 = { 1.00f, 0.00f };
+    system->sizeOverTime.p3 = { 1.00f, 0.00f };
+
+    system->rotationOverTime.p0 = { 0.00f, 0.00f };
+    system->rotationOverTime.p1 = { 0.50f, 1.50f };
+    system->rotationOverTime.p2 = { 1.00f, 0.00f };
+    system->rotationOverTime.p3 = { 1.00f, 0.00f };
+
+    _emitter.useSystem(system);
+    _emitter.useEmitterShape<ConeEmitterShape>(50, 15);
+    _emitter.useTexture(_particleTexture);
+    _emitter.setPosition({400, SCREEN_HEIGHT- SCREEN_HEIGHT/3});
+    _emitter.start();
 
     return true;
 }
@@ -39,121 +80,27 @@ void Game::handleEvent(const SDL_Event* e)
 
 // ===========================================================
 
-void Game::update(double deltaTime)
-{
-    auto button = SDL_GetMouseState(&_mouseX, &_mouseY);
-    if (button & SDL_BUTTON(SDL_BUTTON_LEFT) && !GUI::HasFocus()) {
-        SpawnParticlesRadial(GUI::GetSpawnRate(), (float)_mouseX, (float)_mouseY);
-    }
+void Game::update(double deltaTime) {
+//    auto button = SDL_GetMouseState(&_mouseX, &_mouseY);
+//    if (button & SDL_BUTTON(SDL_BUTTON_LEFT) && !GUI::HasFocus()) {
+//        spawnParticlesRadial(GUI::GetSpawnRate(), (float) _mouseX, (float) _mouseY);
+//    }
 
-
-
-    for (int i = 0; i < _particles.size(); i++) {
-        auto& particle = _particles[i];
-        if (!particle.isAlive) {
-            continue;
-        }
-
-        unsigned int age = (SDL_GetTicks() - particle.startTime);
-        if (age > particle.lifeTime) {
-            particle.isAlive = false;
-            _deadParticlesIndices.push(i);
-            continue;
-        }
-
-        double agePercentage = ((double)age / (double)particle.lifeTime);
-
-        particle.velocity += GUI::GetCurrentGravity() * (float)deltaTime;
-        particle.position += particle.velocity * (float)deltaTime;
-
-//        float rDiff = (particle.endColor.r - particle.startColor.r) * agePercentage;
-//        float gDiff = (particle.endColor.g - particle.startColor.g) * agePercentage;
-//        float bDiff = (particle.endColor.b - particle.startColor.b) * agePercentage;
-//        particle.color.r = particle.startColor.r + rDiff;
-//        particle.color.g = particle.startColor.g + gDiff;
-//        particle.color.b = particle.startColor.b + bDiff;
-
-        particle.color.a = (int)(255.0 - (255.0 * agePercentage));
-
-        if (((int)particle.position.y + particle.size) >= SCREEN_HEIGHT) {
-            particle.isAlive = false;
-            _deadParticlesIndices.push(i);
-        }
-    }
+    _emitter.update(deltaTime);
 }
 
 // ===========================================================
 
+
 void Game::draw(SDL_Renderer* renderer, double deltaTime)
 {
-
-    // draw logic goes here.
-    for (const auto& particle: _particles) {
-        if (!particle.isAlive) {
-            continue;
-        }
-
-        // draw particle position
-        SDL_Rect particleView = {
-            (int)particle.position.x,
-            (int)particle.position.y,
-            particle.size,
-            particle.size
-        };
-
-        SDL_SetRenderDrawColor(
-            renderer,
-            particle.color.r,
-            particle.color.g,
-            particle.color.b,
-            particle.color.a);
-
-        SDL_RenderFillRect(renderer, &particleView);
-    }
+    _emitter.draw(renderer);
 
     if (_isDebug) {
         GUI::Show(
             deltaTime,
-            _particles.size(),
-            _deadParticlesIndices.size());
-    }
-}
-
-void Game::SpawnParticlesRadial(int count, float x, float y) {
-    for (int i = 0; i < count; i++) {
-        glm::vec2 position(x,y);
-        unsigned int lifeTime = GUI::GetParticleLifeTime();
-        unsigned int startTime = SDL_GetTicks();
-        RGBAColor startColor = GUI::GetParticleStartColor();
-        RGBAColor endColor = GUI::GetParticleEndColor();
-
-        // calculate velocity
-        glm::vec2 speed = glm::vec2((rand() % GUI::GetParticleMaxSpeed()));
-        float randomAngle = (rand() % 360) * M_PI/180;
-        glm::vec2 direction = { cos(randomAngle), sin(randomAngle) };
-        glm::vec2 velocity = direction * speed;
-
-        auto& p = GetParticle();
-        p.position = position;
-        p.velocity = velocity;
-        p.isAlive = true;
-        p.color = startColor;
-//        p.startColor = startColor;
-//        p.endColor = endColor;
-        p.startTime = startTime;
-        p.lifeTime = lifeTime;
-        p.size = GUI::GetParticleSize();
-    }
-}
-
-Particle& Game::GetParticle() {
-    if (_deadParticlesIndices.empty()) {
-        _particles.push_back({});
-        return _particles[_particles.size() - 1];
-    } else {
-        int index = _deadParticlesIndices.front();
-        _deadParticlesIndices.pop();
-        return _particles[index];
+            _emitter.getNumberOfParticles(),
+            _emitter.getNumberOfSleepingParticles());
     }
 }
 

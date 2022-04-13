@@ -17,6 +17,7 @@ struct Particle {
     RGBAColor color;
     unsigned int startTime;
     unsigned int lifeTime;
+    float rotation;
 };
 
 #endif //IMP_PARTICLE_H

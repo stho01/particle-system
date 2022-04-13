@@ -4,8 +4,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include <queue>
+#include "ParticleEmitter.h"
 #include "Particle.h"
-#include "ParticlePool.h"
 
 class Game : public GameBase
 {
@@ -20,18 +20,14 @@ protected:
     void update(double deltaTime) override;
     void draw(SDL_Renderer* renderer, double deltaTime) override;
 
-    void SpawnParticlesRadial(int count, float x, float y);
+    void spawnParticlesRadial(int count, float x, float y);
     static float randomFloat();
-
-    Particle& GetParticle();
-
-
+    Particle& getParticle();
 
 private:
-    SDL_Texture* _pngImage = nullptr;
+    SDL_Texture* _particleTexture = nullptr;
     bool _isDebug = true;
-    std::vector<Particle> _particles;
-    std::queue<unsigned int> _deadParticlesIndices;
+    ParticleEmitter _emitter;
     int _mouseX;
     int _mouseY;
 };

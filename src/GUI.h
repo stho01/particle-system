@@ -11,22 +11,22 @@
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_sdlrenderer.h>
 #include "Color.h"
+#include "ParticleSystem.h"
+#include "BeizerCurve.h"
 
 class GUI {
 private:
-    static float _gravity[2];
-    static int _spawnRate;
-    static int _maxParticleSpeed;
     static bool _hasFocus;
-    static int _particleLifeTime;
-    static int _particleSize;
-    static float _particleStartColor[4];
-    static float _particleEndColor[4];
+    static ParticleSystem _particleSystem;
 
 public:
+
+
     static void Show(double deltaTime, int particlesInPool, int deadParticles) {
         _hasFocus = false;
         Begin();
+
+        // ImGui::ShowDemoWindow();
 
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always, ImVec2(0,0));
         ImGui::SetNextWindowBgAlpha(0.9f);
@@ -43,51 +43,51 @@ public:
         _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();
         ImGui::End();
 
-        if (ImGui::Begin("Attributes")) {
-            ImGui::InputFloat2("Gravity", _gravity);
-            ImGui::SliderInt("Spawn Rate", &_spawnRate, 1, 1000);
-            ImGui::Spacing();
-            if (ImGui::CollapsingHeader("Particle")) {
-                ImGui::InputInt("Max Speed", &_maxParticleSpeed);
-                ImGui::SliderInt("Life Time", &_particleLifeTime, 50, 10000);
-                ImGui::InputInt("Size", &_particleSize);
-                ImGui::Spacing();
-                ImGui::ColorPicker4("Start RGBAColor", _particleStartColor);
-                ImGui::Spacing();
-                ImGui::ColorPicker4("End RGBAColor", _particleEndColor);
-            }
+        ImGui::SetNextWindowPos(ImVec2(800, 0), ImGuiCond_Always, ImVec2(0,0));
+        ImGui::SetNextWindowSize(ImVec2(400, 800));
+
+        if (ImGui::Begin("Particle System", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+            ImGui::InputInt("Duration", &_particleSystem.duration);
+            ImGui::Checkbox("Looping", &_particleSystem.looping);
+            ImGui::InputFloat("Gravity Modifier", &_particleSystem.gravityModifier);
+            ImGui::SliderInt("Rate Over Time", &_particleSystem.rateOverTime, 1, 1000);
+
+            ImGui::Separator();
+
+            ImGui::SliderFloat("Start Speed", &_particleSystem.startSpeed, 0.0f, 5000.0f);
+            ImGui::SliderInt("Start Size", &_particleSystem.startSize, 1, 1000);
+            ImGui::SliderAngle("Start Rotation", &_particleSystem.startRotation);
+            ImGui::InputInt("Start Life Time", &_particleSystem.startLifeTime);
+
+            static ImVec4 color = ImVec4(_particleSystem.startColor.r / 255.0f, _particleSystem.startColor.g / 255.0f, _particleSystem.startColor.b / 255.0f, _particleSystem.startColor.a / 255.0f);
+            ImGui::ColorEdit4("Start Color", (float*)&color, ImGuiColorEditFlags_AlphaPreview);
+            _particleSystem.startColor = { (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255), (Uint8)(color.w * 255)};
+
+            ImGui::Separator();
+
+            static int displayCount  = 100;
+            struct Funcs {
+                static float SizeOverTime(void*, int i) {
+                    return _particleSystem.startSize * BeizerCurve::cubicProgression(
+                        (i/(float)displayCount),
+                        _particleSystem.sizeOverTime.p0,
+                        _particleSystem.sizeOverTime.p1,
+                        _particleSystem.sizeOverTime.p2,
+                        _particleSystem.sizeOverTime.p3);
+                }
+            };
+            ImGui::PlotLines("Size over time", Funcs::SizeOverTime, NULL, displayCount, 0, NULL, 0.0f, _particleSystem.startSize, ImVec2(0, 80));
+
         }
+
         _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();
         ImGui::End();
 
         End();
     }
 
+    static ParticleSystem* GetParticleSystem() { return &_particleSystem; }
 
-    static glm::vec2 GetCurrentGravity() { return {_gravity[0], _gravity[1]}; }
-    static int GetParticleMaxSpeed() { return _maxParticleSpeed; }
-    static bool HasFocus() { return _hasFocus; }
-    static int GetParticleLifeTime() { return _particleLifeTime; }
-    static int GetParticleSize() { return _particleSize; }
-    static int GetSpawnRate() { return _spawnRate; }
-
-    static RGBAColor GetParticleStartColor() {
-        return RGBAColor {
-            (Uint8)(_particleStartColor[0] * 255),
-            (Uint8)(_particleStartColor[1] * 255),
-            (Uint8)(_particleStartColor[2] * 255),
-            (Uint8)(_particleStartColor[3] * 255),
-        };
-    }
-
-    static RGBAColor GetParticleEndColor() {
-        return RGBAColor {
-                (Uint8)(_particleEndColor[0] * 255),
-                (Uint8)(_particleEndColor[1] * 255),
-                (Uint8)(_particleEndColor[2] * 255),
-                (Uint8)(_particleEndColor[3] * 255),
-        };
-    }
 
 private:
 
@@ -101,6 +101,23 @@ private:
         ImGui::Render();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }
+
+//    static void PlotCurve(const char* label, ParticleSystem::Curve* curve, float initialValue) {
+//        static int displayCount  = 100;
+//
+//        struct Funcs {
+//            static float SizeOverTime(void*, int i) {
+//                return initialValue * BeizerCurve::cubicProgression(
+//                        (i/(float)displayCount),
+//                        curve->p0,
+//                        curve->p1,
+//                        curve->p2,
+//                        curve->p3);
+//            }
+//        };
+//
+//        ImGui::PlotLines("Size over time", Funcs::SizeOverTime, NULL, displayCount, 0, NULL, 0.0f, _particleSystem.startSize, ImVec2(0, 80));
+//    }
 };
 
 #endif //IMP_GUI_H
