@@ -73,8 +73,15 @@ public:
 
             ImGui::Separator();
 
-            ImGuiPlots::DrawBeizerCurve("Size over time", _particleSystem.sizeOverTime, _particleSystem.startSize);
-            ImGuiPlots::DrawBeizerCurve("Rotation over time", _particleSystem.rotationOverTime, 360);
+
+            if (ImGui::CollapsingHeader("Size over time")) {
+                ImGui::Checkbox("Enable##SizeOverTime", &_particleSystem.sizeOverTime.enabled);
+                ImGuiPlots::BeizerCurve("Size over time", _particleSystem.sizeOverTime.curve);
+            }
+            if (ImGui::CollapsingHeader("Rotation over time")) {
+                ImGui::Checkbox("Enable##RotationOverTime", &_particleSystem.rotationOverTime.enabled);
+                ImGuiPlots::BeizerCurve("Rotation over time", _particleSystem.rotationOverTime.curve);
+            }
         }
 
         _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();

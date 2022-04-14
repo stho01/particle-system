@@ -45,19 +45,24 @@ void ParticleEmitter::update(double deltaTime) {
         particle.velocity += glm::vec2(0, _system->gravityModifier) * (float)deltaTime;
         particle.position += particle.velocity * (float)deltaTime;
 
-        particle.size = _system->startSize * BeizerCurve::cubicProgression(
-                (float)agePercentage,
-                _system->sizeOverTime.p0,
-                _system->sizeOverTime.p1,
-                _system->sizeOverTime.p2,
-                _system->sizeOverTime.p3);
+        if (_system->sizeOverTime.enabled) {
+            particle.size = _system->startSize * BeizerCurve::cubicProgression(
+                    (float)agePercentage,
+                    _system->sizeOverTime.curve.p0,
+                    _system->sizeOverTime.curve.p1,
+                    _system->sizeOverTime.curve.p2,
+                    _system->sizeOverTime.curve.p3);
+        }
 
-        particle.rotation = _system->startRotation + (360.0f * BeizerCurve::cubicProgression(
-                (float)agePercentage,
-                _system->rotationOverTime.p0,
-                _system->rotationOverTime.p1,
-                _system->rotationOverTime.p2,
-                _system->rotationOverTime.p3));
+        if (_system->rotationOverTime.enabled) {
+            particle.rotation = _system->startRotation + (360.0f * BeizerCurve::cubicProgression(
+                    (float)agePercentage,
+                    _system->rotationOverTime.curve.p0,
+                    _system->rotationOverTime.curve.p1,
+                    _system->rotationOverTime.curve.p2,
+                    _system->rotationOverTime.curve.p3));
+        }
+
 
 //        float rDiff = (particle.endColor.r - particle.startColor.r) * agePercentage;
 //        float gDiff = (particle.endColor.g - particle.startColor.g) * agePercentage;
@@ -67,7 +72,7 @@ void ParticleEmitter::update(double deltaTime) {
 //        particle.color.b = particle.startColor.b + bDiff;
 
         particle.color = _system->startColor;
-        particle.color.a = (int)(255.0 - (255.0 * agePercentage));
+        particle.color.a = _system->startColor.a * (1-agePercentage);
     }
 }
 

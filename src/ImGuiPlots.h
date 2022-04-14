@@ -81,13 +81,13 @@ namespace ImGuiPlots {
             return { _domain[0], _domain[1] };
         }
 
-        float get(float value) {
+        float get(float value) const {
             float inDomain = (value - _domain[0])/_domainDiff;
             float result = inDomain * _rangeDiff + _range[0];
             return clamp(_range[0], _range[1], result);
         }
 
-        float inverse(float value) {
+        float inverse(float value) const {
             float inRange = (value - _range[0])/_rangeDiff;
             float result = inRange * _domainDiff + _domain[0];
             return clamp(_domain[0], _domain[1], result);
@@ -112,7 +112,7 @@ namespace ImGuiPlots {
     // ===========================================================
 
     template<typename TPoints>
-    static void addCurve(const TPoints& points, LinearScale& xScale, LinearScale& yScale) {
+    static void addCurve(const TPoints& points, const LinearScale& xScale, const LinearScale& yScale) {
         ImDrawList* drawList = ImGui::GetWindowDrawList();
         const auto baseColor = ImGui::GetColorU32(ImGuiCol_FrameBg);
 
@@ -134,24 +134,41 @@ namespace ImGuiPlots {
 
     // ===========================================================
 
+    static void addControls(CubicBeizerCurve& curve, float controlSize, const LinearScale& xScale, const LinearScale& yScale) {
+        // RENDER CONTROL POINTS.
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        const auto baseColor = ImGui::GetColorU32(ImGuiCol_SliderGrab);
+
+        for (int i = 0; i < curve.size(); i++) {
+            auto x = xScale.get(curve[i].x);
+            auto y = yScale.get(1-curve[i].y);
+
+            if (i % 2 != 0) {
+                auto x1 = xScale.get(curve[i-1].x);
+                auto y1 = yScale.get(1-curve[i-1].y);
+                drawList->AddLine({x1,y1}, {x,y}, IM_COL32(80,80,80,200));
+            }
+
+            drawList->AddCircleFilled({x,y},controlSize,baseColor);
+        }
+    }
+
+    // ===========================================================
+
     template<typename TPoints>
     static void curveEditor(const char* label, CubicBeizerCurve& curve, TPoints& points) {
-        ImGuiWindow* window = ImGui::GetCurrentWindow();
-        ImGuiContext& g = *GImGui;
-        const ImGuiStyle& style = g.Style;
-        const ImGuiID id = window->GetID(label);
-
+        const ImGuiContext& g = *GImGui;
         const float minW = 240.0f;
         const float minH = 100.0f;
         const int padding = 2;
         const int controlSize = 6;
 
-        ImDrawList* drawList = ImGui::GetWindowDrawList();
-        ImVec2 canvasP0 = ImGui::GetCursorScreenPos();
+
+        const ImVec2 canvasP0 = ImGui::GetCursorScreenPos();
         ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-        if (canvasSize.x < minW) canvasSize.x = minW;
-        if (canvasSize.y < minH) canvasSize.y = minH;
-        ImVec2 canvasP1 = ImVec2(canvasP0.x + canvasSize.x, canvasP0.y + canvasSize.y);
+        canvasSize.x = fmax(canvasSize.x, minW);
+        canvasSize.y = fmax(canvasSize.y, minH);
+        const ImVec2 canvasP1 = ImVec2(canvasP0.x + canvasSize.x, canvasP0.y + canvasSize.y);
 
         auto xScale = LinearScale::create().range(canvasP0.x+controlSize, canvasP1.x-controlSize);
         auto yScale = LinearScale::create().range(canvasP0.y+controlSize, canvasP1.y-controlSize);
@@ -172,7 +189,6 @@ namespace ImGuiPlots {
                     if (ImLengthSqr(mousePos - controlPos) < controlSize*controlSize) {
                         std::cout << "Found point: " << i << std::endl;
                         p = &curve[i];
-
                         break;
                     }
                 }
@@ -191,31 +207,15 @@ namespace ImGuiPlots {
             p->y = (1-yScale.inverse(mousePos.y));
         }
 
-        // DRAW CURVE
         addCurve(points, xScale, yScale);
-
-        // RENDER CONTROL POINTS.
-        //const std::array<glm::vec2*, 4> adjustmentPoints = (std::array<glm::vec2*, 4>)curve;
-        for (int i = 0; i < 4; i++) {
-            auto x = xScale.get(curve[i].x);
-            auto y = yScale.get(1-curve[i].y);
-
-            if (i % 2 != 0) {
-                auto x1 = xScale.get(curve[i-1].x);
-                auto y1 = yScale.get(1-curve[i-1].y);
-                drawList->AddLine({x1,y1}, {x,y}, IM_COL32(80,80,80,200));
-            }
-
-            drawList->AddCircle({x,y},controlSize, IM_COL32(100,100,255,255));
-            drawList->AddCircleFilled({x,y},controlSize,IM_COL32(100,100,255,200));
-        }
+        addControls(curve, controlSize, xScale, yScale);
 
         ImGui::InvisibleButton("CurveEditor", canvasSize);
     }
 
     // ===========================================================
 
-    static void DrawBeizerCurve(const char* label, CubicBeizerCurve& curve, float modifier) {
+    static void BeizerCurve(const char* label, CubicBeizerCurve& curve) {
         ImGui::PushID(label);
 
         //

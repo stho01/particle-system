@@ -19,8 +19,11 @@ struct ParticleSystem {
     RGBAColor startColor = {255,255,255,255};
     float gravityModifier = 0.0f;
     int rateOverTime = 10;
-    CubicBeizerCurve sizeOverTime;
-    CubicBeizerCurve rotationOverTime;
+
+    struct {
+        bool enabled = false;
+        CubicBeizerCurve curve{};
+    } sizeOverTime, rotationOverTime;
 };
 
 #endif //IMP_PARTICLESYSTEM_H

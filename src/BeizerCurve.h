@@ -26,6 +26,11 @@ struct CubicBeizerCurve {
             default: throw "Out of bound";
         }
     }
+
+    const int& size() const {
+        static const int size = 4;
+        return size;
+    }
 };
 
 class BeizerCurve {

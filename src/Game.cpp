@@ -30,19 +30,22 @@ bool Game::initialize() {
     SDL_SetRenderTarget(renderer, nullptr);
 
     ParticleSystem* system = GUI::GetParticleSystem();
-    system->sizeOverTime.p0 = { 0.00f, 0.00f };
-    system->sizeOverTime.p1 = { 0.30f, 1.00f };
-    system->sizeOverTime.p2 = { 0.70f, 1.00f };
-    system->sizeOverTime.p3 = { 1.00f, 0.00f };
-    system->rotationOverTime.p0 = { 0.00f, 0.00f };
-    system->rotationOverTime.p1 = { 0.50f, 1.0f };
-    system->rotationOverTime.p2 = { 1.00f, 0.00f };
-    system->rotationOverTime.p3 = { 1.00f, 0.00f };
+    system->sizeOverTime.enabled = true;
+    system->sizeOverTime.curve.p0 = { 0.00f, 0.00f };
+    system->sizeOverTime.curve.p1 = { 0.30f, 1.00f };
+    system->sizeOverTime.curve.p2 = { 0.70f, 1.00f };
+    system->sizeOverTime.curve.p3 = { 1.00f, 0.00f };
+    system->rotationOverTime.enabled = true;
+    system->rotationOverTime.curve.p0 = { 0.00f, 0.00f };
+    system->rotationOverTime.curve.p1 = { 0.50f, 1.0f };
+    system->rotationOverTime.curve.p2 = { 1.00f, 0.00f };
+    system->rotationOverTime.curve.p3 = { 1.00f, 0.00f };
+
 
     _emitter.useSystem(system);
-    _emitter.useEmitterShape<ConeEmitterShape>(50, 15);
+    _emitter.useEmitterShape<CircleEmitterShape>(25);
     _emitter.useTexture(_particleTexture);
-    _emitter.setPosition({400, SCREEN_HEIGHT- SCREEN_HEIGHT/3});
+    _emitter.setPosition({400, SCREEN_HEIGHT/2});
     _emitter.start();
 
     _curve = {
