@@ -240,10 +240,10 @@ namespace ImGuiPlots {
             ImGui::RenderText(ImVec2(frameBBox.Max.x + style.ItemInnerSpacing.x, innerBBox.Min.y), label);
 
         if (ImGui::BeginPopupContextItem("Editor")) {
-            ImGui::InputFloat2("p0", glm::value_ptr(curve.p0));
-            ImGui::InputFloat2("p1", glm::value_ptr(curve.p1));
-            ImGui::InputFloat2("p2", glm::value_ptr(curve.p2));
-            ImGui::InputFloat2("p3", glm::value_ptr(curve.p3));
+            ImGui::SliderFloat("p0.y", &curve.p0.y, 0.0f, 1.0f);
+            ImGui::SliderFloat2("p1", glm::value_ptr(curve.p1), 0.0f, 1.0f);
+            ImGui::SliderFloat2("p2", glm::value_ptr(curve.p2), 0.0f, 1.0f);
+            ImGui::SliderFloat("p3.y", &curve.p3.y, 0.0f, 1.0f);
             curveEditor("CurveEditor", curve, points);
             ImGui::EndPopup();
         }

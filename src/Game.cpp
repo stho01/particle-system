@@ -90,55 +90,6 @@ void Game::update(double deltaTime) {
 
 void Game::draw(SDL_Renderer* renderer, double deltaTime)
 {
-    /*
-    const glm::vec2 scale(240, 100);
-    const glm::vec2 translate(100, 400);
-
-    // try select new point:
-    if (_mouseButton & SDL_BUTTON(SDL_BUTTON_LEFT)) {
-        glm::vec2 mouse = glm::vec2(_mouseX, _mouseY);
-        glm::vec2 newPoint = (mouse - translate) / scale;
-
-        for (int i = 0; i < 4; i++) {
-            if (glm::length(newPoint - _curve[i]) <= .1) {
-                _curve[i] = newPoint;
-                _selected = i;
-                break;
-            }
-        }
-    }
-
-    // render controls
-    std::array<glm::vec2*, 4> adjustmentPoints = (std::array<glm::vec2*, 4>)_curve;
-    const int size = 8;
-    for (int i = 0; i < adjustmentPoints.size(); i++) {
-        if (i % 2 != 0) {
-            SDL_SetRenderDrawColor(renderer, 80,80,80,255);
-            auto p1 = (*adjustmentPoints[i-1] * scale + translate);
-            auto p2 = (*adjustmentPoints[i] * scale + translate);
-            SDL_RenderDrawLineF(renderer, p1.x,p1.y, p2.x,p2.y);
-        }
-
-        if (i == _selected)
-            SDL_SetRenderDrawColor(renderer, 255,0,0,255);
-        else
-            SDL_SetRenderDrawColor(renderer, 0,255,0,255);
-
-        auto p = (*adjustmentPoints[i] * scale + translate) - size/2.0f;
-        SDL_Rect rect = { (int)p.x, (int)p.y, size, size };
-        SDL_RenderFillRect(renderer, &rect);
-    }
-
-    // render curve
-    SDL_SetRenderDrawColor(renderer, 255,255,255,255);
-    auto points = BeizerCurve::getPoints<100>(_curve);
-    for (int i = 1; i < points.size(); i++) {
-        auto p1 = points[i-1] * scale + translate;
-        auto p2 = points[i] * scale + translate;
-        SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
-    }
-     */
-
     _emitter.draw(renderer);
 
     if (_isDebug) {
