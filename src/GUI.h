@@ -5,28 +5,33 @@
 #ifndef IMP_GUI_H
 #define IMP_GUI_H
 
+#include <functional>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_sdl.h>
 #include <imgui/imgui_impl_sdlrenderer.h>
 #include "Color.h"
 #include "ParticleSystem.h"
 #include "BeizerCurve.h"
+#include "ImGuiPlots.h"
 
 class GUI {
 private:
+    static bool _showDemo;
     static bool _hasFocus;
     static ParticleSystem _particleSystem;
 
 public:
 
-
     static void Show(double deltaTime, int particlesInPool, int deadParticles) {
         _hasFocus = false;
         Begin();
 
-        // ImGui::ShowDemoWindow();
+        if (_showDemo) {
+            ImGui::ShowDemoWindow();
+        }
 
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always, ImVec2(0,0));
         ImGui::SetNextWindowBgAlpha(0.9f);
@@ -39,6 +44,9 @@ public:
                     ImGui::GetIO().MousePos.x,
                     ImGui::GetIO().MousePos.y
             );
+            if (ImGui::Button("Toggle demo")) {
+                _showDemo = !_showDemo;
+            }
         }
         _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();
         ImGui::End();
@@ -54,7 +62,7 @@ public:
 
             ImGui::Separator();
 
-            ImGui::SliderFloat("Start Speed", &_particleSystem.startSpeed, 0.0f, 5000.0f);
+            ImGui::InputFloat("Start Speed", &_particleSystem.startSpeed, 0.0f, 5000.0f);
             ImGui::SliderInt("Start Size", &_particleSystem.startSize, 1, 1000);
             ImGui::SliderAngle("Start Rotation", &_particleSystem.startRotation);
             ImGui::InputInt("Start Life Time", &_particleSystem.startLifeTime);
@@ -65,19 +73,8 @@ public:
 
             ImGui::Separator();
 
-            static int displayCount  = 100;
-            struct Funcs {
-                static float SizeOverTime(void*, int i) {
-                    return _particleSystem.startSize * BeizerCurve::cubicProgression(
-                        (i/(float)displayCount),
-                        _particleSystem.sizeOverTime.p0,
-                        _particleSystem.sizeOverTime.p1,
-                        _particleSystem.sizeOverTime.p2,
-                        _particleSystem.sizeOverTime.p3);
-                }
-            };
-            ImGui::PlotLines("Size over time", Funcs::SizeOverTime, NULL, displayCount, 0, NULL, 0.0f, _particleSystem.startSize, ImVec2(0, 80));
-
+            ImGuiPlots::DrawBeizerCurve("Size over time", _particleSystem.sizeOverTime, _particleSystem.startSize);
+            ImGuiPlots::DrawBeizerCurve("Rotation over time", _particleSystem.rotationOverTime, 360);
         }
 
         _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();
@@ -101,23 +98,8 @@ private:
         ImGui::Render();
         ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
     }
-
-//    static void PlotCurve(const char* label, ParticleSystem::Curve* curve, float initialValue) {
-//        static int displayCount  = 100;
-//
-//        struct Funcs {
-//            static float SizeOverTime(void*, int i) {
-//                return initialValue * BeizerCurve::cubicProgression(
-//                        (i/(float)displayCount),
-//                        curve->p0,
-//                        curve->p1,
-//                        curve->p2,
-//                        curve->p3);
-//            }
-//        };
-//
-//        ImGui::PlotLines("Size over time", Funcs::SizeOverTime, NULL, displayCount, 0, NULL, 0.0f, _particleSystem.startSize, ImVec2(0, 80));
-//    }
 };
+
+
 
 #endif //IMP_GUI_H

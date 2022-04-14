@@ -30,5 +30,9 @@ private:
     ParticleEmitter _emitter;
     int _mouseX;
     int _mouseY;
+    int _mouseButton;
+
+    int _selected = 0;
+    CubicBeizerCurve _curve;
 };
 

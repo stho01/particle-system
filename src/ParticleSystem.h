@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include "Color.h"
+#include "BeizerCurve.h"
 
 struct ParticleSystem {
     int duration = 5000;
@@ -18,13 +19,8 @@ struct ParticleSystem {
     RGBAColor startColor = {255,255,255,255};
     float gravityModifier = 0.0f;
     int rateOverTime = 10;
-
-    struct Curve {
-        glm::vec2 p0;
-        glm::vec2 p1;
-        glm::vec2 p2;
-        glm::vec2 p3;
-    } sizeOverTime, rotationOverTime;
+    CubicBeizerCurve sizeOverTime;
+    CubicBeizerCurve rotationOverTime;
 };
 
 #endif //IMP_PARTICLESYSTEM_H

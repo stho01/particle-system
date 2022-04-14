@@ -6,3 +6,4 @@
 
 ParticleSystem GUI::_particleSystem = {};
 bool GUI::_hasFocus = false;
+bool GUI::_showDemo = false;
