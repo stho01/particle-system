@@ -31,7 +31,7 @@ bool Game::initialize() {
 
     ParticleSystem* system = GUI::GetParticleSystem();
     system->sizeOverTime.enabled = true;
-    system->sizeOverTime.curve.p0 = { 0.00f, 0.00f };
+    system->sizeOverTime.curve.p0 = { 0.00f, 0.50f };
     system->sizeOverTime.curve.p1 = { 0.30f, 1.00f };
     system->sizeOverTime.curve.p2 = { 0.70f, 1.00f };
     system->sizeOverTime.curve.p3 = { 1.00f, 0.00f };
@@ -41,20 +41,11 @@ bool Game::initialize() {
     system->rotationOverTime.curve.p2 = { 1.00f, 0.00f };
     system->rotationOverTime.curve.p3 = { 1.00f, 0.00f };
 
-
     _emitter.useSystem(system);
     _emitter.useEmitterShape<CircleEmitterShape>(25);
     _emitter.useTexture(_particleTexture);
     _emitter.setPosition({400, SCREEN_HEIGHT/2});
     _emitter.start();
-
-    _curve = {
-        {0,0},
-        {.5,0},
-        {.5,1},
-        {1,1}
-    };
-
 
     return true;
 }
@@ -67,13 +58,6 @@ void Game::handleEvent(const SDL_Event* e)
     if (e->type == SDL_KEYDOWN) {
         auto symbol = e->key.keysym.sym;
         if (symbol == SDLK_F1) _isDebug = !_isDebug;
-
-        switch (symbol) {
-            case SDLK_1: _selected = 0; break;
-            case SDLK_2: _selected = 1; break;
-            case SDLK_3: _selected = 2; break;
-            case SDLK_4: _selected = 3; break;
-        }
     }
 }
 

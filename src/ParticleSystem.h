@@ -13,12 +13,12 @@ struct ParticleSystem {
     int duration = 5000;
     bool looping = true;
     float startSpeed = 50.0f;
-    int startSize = 10;
+    int startSize = 70;
     float startRotation = 0.0f;
     int startLifeTime = 3000;
-    RGBAColor startColor = {255,255,255,255};
+    RGBAColor startColor = {255,255,255,5};
     float gravityModifier = 0.0f;
-    int rateOverTime = 10;
+    int rateOverTime = 500;
 
     struct {
         bool enabled = false;
