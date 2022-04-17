@@ -10,10 +10,10 @@
 #include <array>
 
 struct CubicBeizerCurve {
-    glm::vec2 p0;
-    glm::vec2 p1;
-    glm::vec2 p2;
-    glm::vec2 p3;
+    glm::vec2 p0 = {0.0f, 1.0f};
+    glm::vec2 p1 = {0.33f, 0.66f};
+    glm::vec2 p2 = {0.66f, 0.33f};
+    glm::vec2 p3 = {1.0f, 0.0f};
 
     explicit operator std::array<glm::vec2*, 4>() { return { &p0, &p1, &p2, &p3, }; }
     explicit operator glm::vec2* (){ return &p0; }

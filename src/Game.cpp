@@ -23,11 +23,14 @@ bool Game::loadMedias()
 
 bool Game::initialize() {
     auto* renderer = getRenderer();
-    _particleTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
-    SDL_SetRenderTarget(renderer, _particleTexture);
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
-    SDL_RenderDrawPoint(renderer,0,0);
-    SDL_SetRenderTarget(renderer, nullptr);
+
+    _particleTexture = loadTexture("assets/particle.png");
+
+//    _particleTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+//    SDL_SetRenderTarget(renderer, _particleTexture);
+//    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+//    SDL_RenderDrawPoint(renderer,0,0);
+//    SDL_SetRenderTarget(renderer, nullptr);
 
     ParticleSystem* system = GUI::GetParticleSystem();
     system->sizeOverTime.enabled = true;
@@ -42,7 +45,11 @@ bool Game::initialize() {
     system->rotationOverTime.curve.p3 = { 1.00f, 0.00f };
 
     _emitter.useSystem(system);
-    _emitter.useEmitterShape<DonutEmitterShape>(150, 20.0f, 300.0f);
+
+//  _emitter.useEmitterShape<DonutEmitterShape>(150, 20.0f, 300.0f);
+  _emitter.useEmitterShape<CircleEmitterShape>();
+//    _emitter.useEmitterShape<ConeEmitterShape>(75, 20);
+
     _emitter.useTexture(_particleTexture);
     _emitter.setPosition({400, SCREEN_HEIGHT/2});
     _emitter.start();

@@ -46,33 +46,30 @@ void ParticleEmitter::update(double deltaTime) {
         particle.position += particle.velocity * (float)deltaTime;
 
         if (_system->sizeOverTime.enabled) {
-            particle.size = _system->startSize * BeizerCurve::cubicProgression(
-                    (float)agePercentage,
-                    _system->sizeOverTime.curve.p0,
-                    _system->sizeOverTime.curve.p1,
-                    _system->sizeOverTime.curve.p2,
-                    _system->sizeOverTime.curve.p3);
+            particle.size = _system->startSize * BeizerCurve::cubicProgression((float)agePercentage, _system->sizeOverTime.curve);
         }
-
         if (_system->rotationOverTime.enabled) {
-            particle.rotation = _system->startRotation + (360.0f * BeizerCurve::cubicProgression(
-                    (float)agePercentage,
-                    _system->rotationOverTime.curve.p0,
-                    _system->rotationOverTime.curve.p1,
-                    _system->rotationOverTime.curve.p2,
-                    _system->rotationOverTime.curve.p3));
+            particle.rotation = _system->startRotation + (360.0f * BeizerCurve::cubicProgression((float)agePercentage, _system->rotationOverTime.curve));
         }
 
+        if (_system->colorOverTime.enabled) {
+            auto progression = 1 - BeizerCurve::cubicProgression((float)agePercentage, _system->colorOverTime.curve);
+            particle.color.r = (_system->colorOverTime.targetColor.r - _system->startColor.r) * progression + _system->startColor.r;
+            particle.color.g = (_system->colorOverTime.targetColor.g - _system->startColor.g) * progression + _system->startColor.g;
+            particle.color.b = (_system->colorOverTime.targetColor.b - _system->startColor.b) * progression + _system->startColor.b;
+            particle.color.a = (_system->colorOverTime.targetColor.a - _system->startColor.a) * progression + _system->startColor.a;
+        }
 
-//        float rDiff = (particle.endColor.r - particle.startColor.r) * agePercentage;
-//        float gDiff = (particle.endColor.g - particle.startColor.g) * agePercentage;
-//        float bDiff = (particle.endColor.b - particle.startColor.b) * agePercentage;
-//        particle.color.r = particle.startColor.r + rDiff;
-//        particle.color.g = particle.startColor.g + gDiff;
-//        particle.color.b = particle.startColor.b + bDiff;
+        if (_system->velocityOverTime.enabled) {
+            glm::vec2 velocityProgression = {
+                BeizerCurve::cubicProgression((float)agePercentage, _system->velocityOverTime.xCurve),
+                BeizerCurve::cubicProgression((float)agePercentage, _system->velocityOverTime.yCurve)
+            };
 
-        particle.color = _system->startColor;
-        particle.color.a = _system->startColor.a * (1-agePercentage);
+            particle.velocity += (velocityProgression * _system->velocityOverTime.force * (float)deltaTime);
+        }
+
+        // particle.color.a = _system->startColor.a * (1-agePercentage);
     }
 }
 
@@ -96,10 +93,10 @@ void ParticleEmitter::draw(SDL_Renderer* renderer) {
 
 void ParticleEmitter::drawRect(SDL_Renderer* renderer, const Particle& particle) {
     SDL_Rect particleView = {
-            (int)particle.position.x,
-            (int)particle.position.y,
-            particle.size,
-            particle.size
+        (int)particle.position.x,
+        (int)particle.position.y,
+        particle.size,
+        particle.size
     };
 
     SDL_SetRenderDrawColor(
@@ -128,6 +125,7 @@ void ParticleEmitter::drawTexture(SDL_Renderer* renderer, const Particle& partic
        particle.color.r,
        particle.color.g,
        particle.color.b);
+
     SDL_SetTextureAlphaMod(
         _texture,
         particle.color.a);
@@ -176,7 +174,7 @@ void ParticleEmitter::emit() {
     particle->startTime = SDL_GetTicks();
     particle->position = _position + shapeResult.positionOffset;
     particle->velocity = shapeResult.directionOfVelocity * _system->startSpeed;
-    particle->lifeTime = _system->startLifeTime;
+    particle->lifeTime = _system->startLifeTime + ((rand() / (float)RAND_MAX) * _system->startLifeTime * 0.5f); // todo: let system decide lifetime discrepancy
     particle->color = _system->startColor;
     particle->size = _system->startSize;
     particle->rotation = _system->startRotation;

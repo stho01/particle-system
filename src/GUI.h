@@ -5,6 +5,7 @@
 #ifndef IMP_GUI_H
 #define IMP_GUI_H
 
+
 #include <functional>
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
@@ -33,6 +34,7 @@ private:
     static void InfoWindow(double deltaTime, int particlesInPool, int deadParticles);
     static void ParticleSystem();
     static void End();
+    static void ColorEdit(const char* label, RGBAColor* rgbaColor);
 };
 
 

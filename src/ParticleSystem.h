@@ -20,10 +20,23 @@ struct ParticleSystem {
     float gravityModifier = 0.0f;
     int rateOverTime = 500;
 
-    struct {
+    struct BeizerCurve {
         bool enabled = false;
         CubicBeizerCurve curve{};
     } sizeOverTime, rotationOverTime;
+
+    struct ColorOverTime {
+        bool enabled = false;
+        CubicBeizerCurve curve{};
+        RGBAColor targetColor = {255,255,255};
+    } colorOverTime;
+
+    struct {
+        bool enabled = false;
+        glm::vec2 force = {10.0f, 10.0f};
+        CubicBeizerCurve xCurve{};
+        CubicBeizerCurve yCurve{};
+    } velocityOverTime;
 };
 
 #endif //IMP_PARTICLESYSTEM_H

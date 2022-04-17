@@ -64,11 +64,7 @@ void GUI::ParticleSystem() {
         ImGui::SliderInt("Start Size", &_particleSystem.startSize, 1, 1000);
         ImGui::SliderAngle("Start Rotation", &_particleSystem.startRotation);
         ImGui::InputInt("Start Life Time", &_particleSystem.startLifeTime);
-
-        static ImVec4 color = ImVec4(_particleSystem.startColor.r / 255.0f, _particleSystem.startColor.g / 255.0f, _particleSystem.startColor.b / 255.0f, _particleSystem.startColor.a / 255.0f);
-        ImGui::ColorEdit4("Start Color", (float*)&color, ImGuiColorEditFlags_AlphaPreview);
-        _particleSystem.startColor = { (Uint8)(color.x * 255), (Uint8)(color.y * 255), (Uint8)(color.z * 255), (Uint8)(color.w * 255)};
-
+        ColorEdit("Start Color", &_particleSystem.startColor);
         ImGui::Separator();
 
 
@@ -80,6 +76,17 @@ void GUI::ParticleSystem() {
             ImGui::Checkbox("Enable##RotationOverTime", &_particleSystem.rotationOverTime.enabled);
             ImGuiPlots::BeizerCurve("Rotation over time", _particleSystem.rotationOverTime.curve);
         }
+        if (ImGui::CollapsingHeader("Color over time")) {
+            ImGui::Checkbox("Enable##ColorOverTime", &_particleSystem.colorOverTime.enabled);
+            ColorEdit("Target Color", &_particleSystem.colorOverTime.targetColor);
+            ImGuiPlots::BeizerCurve("Rotation over time", _particleSystem.colorOverTime.curve);
+        }
+        if (ImGui::CollapsingHeader("Velocity over time")) {
+            ImGui::Checkbox("Enable##ColorOverTime", &_particleSystem.velocityOverTime.enabled);
+            ImGui::InputFloat2("Force (x,y)", glm::value_ptr(_particleSystem.velocityOverTime.force));
+            ImGuiPlots::BeizerCurve("X Velocity", _particleSystem.velocityOverTime.xCurve);
+            ImGuiPlots::BeizerCurve("Y Velocity", _particleSystem.velocityOverTime.yCurve);
+        }
     }
 
     _hasFocus |= ImGui::IsAnyItemHovered() || ImGui::IsAnyItemFocused() || ImGui::IsAnyItemActive();
@@ -89,4 +96,19 @@ void GUI::ParticleSystem() {
 void GUI::End() {
     ImGui::Render();
     ImGui_ImplSDLRenderer_RenderDrawData(ImGui::GetDrawData());
+}
+
+void GUI::ColorEdit(const char* label, RGBAColor* rgbaColor) {
+    ImVec4 color = ImVec4(
+            rgbaColor->r / 255.0f,
+            rgbaColor->g / 255.0f,
+            rgbaColor->b / 255.0f,
+            rgbaColor->a / 255.0f);
+
+    ImGui::ColorEdit4(label, (float*)&color, ImGuiColorEditFlags_AlphaPreview);
+
+    rgbaColor->r = (Uint8)(color.x * 255);
+    rgbaColor->g = (Uint8)(color.y * 255);
+    rgbaColor->b = (Uint8)(color.z * 255);
+    rgbaColor->a = (Uint8)(color.w * 255);
 }
