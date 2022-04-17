@@ -42,7 +42,7 @@ bool Game::initialize() {
     system->rotationOverTime.curve.p3 = { 1.00f, 0.00f };
 
     _emitter.useSystem(system);
-    _emitter.useEmitterShape<CircleEmitterShape>(25);
+    _emitter.useEmitterShape<DonutEmitterShape>();
     _emitter.useTexture(_particleTexture);
     _emitter.setPosition({400, SCREEN_HEIGHT/2});
     _emitter.start();

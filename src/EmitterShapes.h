@@ -6,7 +6,7 @@
 #define IMP_EMITTERSHAPES_H
 
 #include <glm/glm.hpp>
-
+#include <iostream>
 
 
 struct EmitterShapeResult {
@@ -65,6 +65,29 @@ public:
 
         return { offset, dir };
     };
+};
+
+class DonutEmitterShape : public IEmitterShape {
+public:
+    int radius;
+    float thickness;
+
+    DonutEmitterShape(int radius = 150, float thickness = 20.0f) {
+        this->radius = radius;
+        this->thickness = thickness;
+    }
+
+    EmitterShapeResult calculate() override {
+        float angle = ((rand() / (float)RAND_MAX) * 360.0f) * 180/M_PI;
+        float displacement = ((rand() / (float)RAND_MAX) * thickness) - thickness/2;
+        glm::vec2 dir = {
+            cos(angle),
+            sin(angle)
+        };
+        glm::vec2 offset = dir * (radius + displacement);
+
+        return { offset, dir };
+    }
 };
 
 #endif //IMP_EMITTERSHAPES_H
