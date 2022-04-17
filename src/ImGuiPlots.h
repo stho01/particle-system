@@ -187,7 +187,6 @@ namespace ImGuiPlots {
                     };
 
                     if (ImLengthSqr(mousePos - controlPos) < controlSize*controlSize) {
-                        std::cout << "Found point: " << i << std::endl;
                         p = &curve[i];
                         break;
                     }

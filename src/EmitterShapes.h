@@ -71,14 +71,16 @@ class DonutEmitterShape : public IEmitterShape {
 public:
     int radius;
     float thickness;
+    float arc;
 
-    DonutEmitterShape(int radius = 150, float thickness = 20.0f) {
+    DonutEmitterShape(int radius = 150, float thickness = 20.0f, float arc = 360.0f) {
         this->radius = radius;
         this->thickness = thickness;
+        this->arc = arc;
     }
 
     EmitterShapeResult calculate() override {
-        float angle = ((rand() / (float)RAND_MAX) * 360.0f) * 180/M_PI;
+        float angle = ((rand() / (float)RAND_MAX) * arc) * M_PI/180;
         float displacement = ((rand() / (float)RAND_MAX) * thickness) - thickness/2;
         glm::vec2 dir = {
             cos(angle),
